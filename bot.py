@@ -13,6 +13,9 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 TOKENS_OVER_MESSAGE = "Tokens are over. Please ebbot tomorrow."
+HELP_MESSAGE = """Write @ebbot plus a short phrase, up to 5 words, and I will explain it in the same language.
+Example: @ebbot stablecoin
+Reply to any message with only @ebbot, and I will explain that message."""
 
 
 logging.basicConfig(
@@ -56,9 +59,15 @@ def is_tokens_over_response(response: requests.Response) -> bool:
 
 def ask_openai(text: str, explain_post: bool = False) -> str:
     if explain_post:
-        prompt = f"Поясни {text}. Не более 50 слов."
+        prompt = (
+            "Определи язык текста и ответь на том же языке. "
+            f"Поясни этот пост: {text}. Не более 50 слов."
+        )
     else:
-        prompt = f"Объясни простыми словами, что такое: {text}. Не больше 50 слов."
+        prompt = (
+            "Определи язык текста и ответь на том же языке. "
+            f"Поясни простыми словами: {text}. Не более 50 слов."
+        )
 
     response = requests.post(
         f"{OPENAI_BASE_URL}/chat/completions",
@@ -99,6 +108,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         return
 
     phrase = clean_trigger_text(message_text)
+    if phrase.lower() == "help":
+        await message.reply_text(HELP_MESSAGE)
+        return
+
     explain_post = False
     if message.reply_to_message:
         explain_post = not phrase
@@ -137,3 +150,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

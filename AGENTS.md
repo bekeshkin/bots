@@ -2,7 +2,7 @@
 
 ## Project
 
-`ebbot` is a small Python Telegram bot. It replies in Telegram when users mention `@ebbot` and asks OpenAI for a short Russian explanation.
+`ebbot` is a small Python Telegram bot. It replies in Telegram when users mention `@ebbot` and asks OpenAI for a short explanation in the same language as the source text.
 
 ## Files
 
@@ -16,8 +16,10 @@ Keep these rules intact unless the user explicitly asks to change them:
 
 - Direct message with `@ebbot <phrase>`: explain `<phrase>` only if it is 1 to 5 words.
 - Direct message with only `@ebbot`: reply `What I need explain?`.
+- Direct message with `@ebbot help`: return usage instructions in English without calling OpenAI.
 - Reply to another Telegram message with only `@ebbot`: explain the replied message text or caption.
 - Reply mode does not check the 5-word limit.
+- Answers should use the same language as the phrase or replied post.
 - Token/quota/rate-limit OpenAI errors reply with `Tokens are over. Please ebbot tomorrow.`.
 
 ## Prompts
@@ -25,13 +27,13 @@ Keep these rules intact unless the user explicitly asks to change them:
 Direct short phrase prompt:
 
 ```text
-Объясни простыми словами, что такое: <text>. Не больше 50 слов.
+Определи язык текста и ответь на том же языке. Поясни простыми словами: <text>. Не более 50 слов.
 ```
 
 Reply-only prompt:
 
 ```text
-Поясни <text post>. Не более 50 слов.
+Определи язык текста и ответь на том же языке. Поясни этот пост: <text post>. Не более 50 слов.
 ```
 
 ## Setup
@@ -55,3 +57,5 @@ Optional:
 - Prefer small, readable functions in `bot.py`.
 - If changing bot behavior, update `README.md` too.
 - This workspace may not have Python installed, so mention clearly if tests or syntax checks could not be run.
+
+

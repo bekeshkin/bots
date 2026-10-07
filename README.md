@@ -10,7 +10,7 @@ Write the bot name with a short phrase, up to 5 words:
 @ebbot стейблкоин
 ```
 
-The bot will explain the phrase in Russian, no more than 50 words.
+The bot detects the phrase language and answers in the same language, no more than 50 words.
 
 Reply to any message and write only:
 
@@ -18,7 +18,15 @@ Reply to any message and write only:
 @ebbot
 ```
 
-The bot will explain the message you replied to. In this mode the 5-word limit is not checked, because the text comes from the replied post.
+The bot explains the message you replied to and answers in the same language as that message. In this mode the 5-word limit is not checked, because the text comes from the replied post.
+
+If you write:
+
+```text
+@ebbot help
+```
+
+the bot returns usage instructions in English.
 
 If you write only `@ebbot` without replying to a message, the bot answers:
 
@@ -37,13 +45,13 @@ Tokens are over. Please ebbot tomorrow.
 For a direct short phrase, the bot sends:
 
 ```text
-Объясни простыми словами, что такое: <text>. Не больше 50 слов.
+Определи язык текста и ответь на том же языке. Поясни простыми словами: <text>. Не более 50 слов.
 ```
 
 For a reply with only `@ebbot`, the bot sends:
 
 ```text
-Поясни <text post>. Не более 50 слов.
+Определи язык текста и ответь на том же языке. Поясни этот пост: <text post>. Не более 50 слов.
 ```
 
 ## Setup
@@ -65,3 +73,4 @@ $env:BOT_NAME = "@ebbot"
 $env:OPENAI_MODEL = "gpt-4o-mini"
 $env:OPENAI_BASE_URL = "https://api.openai.com/v1"
 ```
+
