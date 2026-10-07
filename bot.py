@@ -9,9 +9,11 @@ from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandl
 
 BOT_NAME = os.getenv("BOT_NAME", "@ebbot").lower()
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "openrouter/free")
+OPENROUTER_SITE_URL = os.getenv("OPENROUTER_SITE_URL")
+OPENROUTER_SITE_NAME = os.getenv("OPENROUTER_SITE_NAME", "ebbot")
 TOKENS_OVER_MESSAGE = "Tokens are over. Please ebbot tomorrow."
 HELP_MESSAGE = """Write @ebbot plus a short phrase, up to 5 words, and I will explain it in the same language.
 Example: @ebbot stablecoin
@@ -48,16 +50,17 @@ def is_tokens_over_response(response: requests.Response) -> bool:
     except ValueError:
         return False
 
-    code = error.get("code", "")
-    message = error.get("message", "").lower()
-    return code in {
-        "insufficient_quota",
-        "rate_limit_exceeded",
-        "billing_hard_limit_reached",
-    } or "quota" in message or "rate limit" in message
+    code = str(error.get("code", "")).lower()
+    message = str(error.get("message", "")).lower()
+    return (
+        code in {"insufficient_quota", "rate_limit_exceeded", "billing_hard_limit_reached"}
+        or "quota" in message
+        or "rate limit" in message
+        or "credits" in message
+    )
 
 
-def ask_openai(text: str, explain_post: bool = False) -> str:
+def ask_openrouter(text: str, explain_post: bool = False) -> str:
     if explain_post:
         prompt = (
             "Определи язык текста и ответь на том же языке. "
@@ -69,14 +72,19 @@ def ask_openai(text: str, explain_post: bool = False) -> str:
             f"Поясни простыми словами: {text}. Не более 50 слов."
         )
 
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Content-Type": "application/json",
+        "X-Title": OPENROUTER_SITE_NAME,
+    }
+    if OPENROUTER_SITE_URL:
+        headers["HTTP-Referer"] = OPENROUTER_SITE_URL
+
     response = requests.post(
-        f"{OPENAI_BASE_URL}/chat/completions",
-        headers={
-            "Authorization": f"Bearer {OPENAI_API_KEY}",
-            "Content-Type": "application/json",
-        },
+        f"{OPENROUTER_BASE_URL}/chat/completions",
+        headers=headers,
         json={
-            "model": OPENAI_MODEL,
+            "model": OPENROUTER_MODEL,
             "messages": [{"role": "user", "content": prompt}],
             "temperature": 0.2,
             "max_tokens": 90,
@@ -124,12 +132,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         return
 
     try:
-        answer = ask_openai(phrase, explain_post=explain_post)
+        answer = ask_openrouter(phrase, explain_post=explain_post)
     except TokensOverError:
         await message.reply_text(TOKENS_OVER_MESSAGE)
         return
     except requests.RequestException:
-        logger.exception("OpenAI request failed")
+        logger.exception("OpenRouter request failed")
         await message.reply_text("Sorry, I could not get an answer now.")
         return
 
@@ -139,8 +147,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 def main() -> None:
     if not TELEGRAM_TOKEN:
         raise RuntimeError("Set TELEGRAM_BOT_TOKEN before starting the bot.")
-    if not OPENAI_API_KEY:
-        raise RuntimeError("Set OPENAI_API_KEY before starting the bot.")
+    if not OPENROUTER_API_KEY:
+        raise RuntimeError("Set OPENROUTER_API_KEY before starting the bot.")
 
     app = Application.builder().token(TELEGRAM_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
@@ -150,4 +158,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

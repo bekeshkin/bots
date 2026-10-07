@@ -1,6 +1,6 @@
 # ebbot
 
-Simple Telegram bot for short explanations in chat.
+Simple Telegram bot for short explanations in chat. It uses OpenRouter for AI responses.
 
 ## How to use in Telegram
 
@@ -34,7 +34,7 @@ If you write only `@ebbot` without replying to a message, the bot answers:
 What I need explain?
 ```
 
-If OpenAI tokens or quota are over, the bot answers:
+If OpenRouter tokens, credits, or rate limits are over, the bot answers:
 
 ```text
 Tokens are over. Please ebbot tomorrow.
@@ -62,7 +62,7 @@ python -m venv .venv
 pip install -r requirements.txt
 
 $env:TELEGRAM_BOT_TOKEN = "your_telegram_bot_token"
-$env:OPENAI_API_KEY = "your_openai_api_key"
+$env:OPENROUTER_API_KEY = "your_openrouter_api_key"
 python bot.py
 ```
 
@@ -70,7 +70,8 @@ Optional settings:
 
 ```powershell
 $env:BOT_NAME = "@ebbot"
-$env:OPENAI_MODEL = "gpt-4o-mini"
-$env:OPENAI_BASE_URL = "https://api.openai.com/v1"
+$env:OPENROUTER_MODEL = "openrouter/free"
+$env:OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+$env:OPENROUTER_SITE_NAME = "ebbot"
+$env:OPENROUTER_SITE_URL = "https://example.com"
 ```
-
